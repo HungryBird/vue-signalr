@@ -1,17 +1,47 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <button @click="test">
+      测试
+    </button>
+    {{ content }}
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import * as signalR from "@aspnet/signalr";
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    //
+  },
+  data() {
+    return {
+      content: '测试内容',
+    }
+  },
+  mounted() {
+    console.log('signalR: ', signalR);
+  },
+  methods: {
+    test() {
+      const self = this;
+      const connect = new signalR.HubConnectionBuilder().withUrl('/chathub').build();
+      
+      connect.start().catch(err => {
+        console.error('err:', toString(err))
+      });
+      connect.on('someFunc', (obj) => {
+        console.log('someFunc', obj)
+      });
+      connect.on('ReceiveMessage', (obj) => {
+        console.log('ReceiveMessage: ', obj)
+      })
+      connect.on('finished', (obj) => {
+        connect.stop();
+        console.log('finished: ', obj);
+      })
+    }
   }
 }
 </script>
